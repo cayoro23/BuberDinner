@@ -36,14 +36,9 @@ public class AuthenticationService : IAuthenticationService
 
         // 3. Creamos un JWT Token
 
-        var token = _jwtGenerator.GenerateToken(user.Id, firsName, lastName);
+        var token = _jwtGenerator.GenerateToken(user);
 
-        return new AuthenticationResult(
-            user.Id,
-            firsName,
-            lastName,
-            email,
-            token);
+        return new AuthenticationResult(user, token);
     }
 
     public AuthenticationResult Login(string email, string password)
@@ -61,13 +56,8 @@ public class AuthenticationService : IAuthenticationService
         }
 
         // 3. Creamos un JWT Token
-        var token = _jwtGenerator.GenerateToken(user.Id, user.FirstName, user.LastName);
+        var token = _jwtGenerator.GenerateToken(user);
 
-        return new AuthenticationResult(
-            Guid.NewGuid(),
-            user.FirstName,
-            user.LastName,
-            email,
-            token);
+        return new AuthenticationResult(user, token);
     }
 }
