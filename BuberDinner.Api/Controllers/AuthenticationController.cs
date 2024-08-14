@@ -1,25 +1,32 @@
-﻿using BuberDinner.Application.Services.Authentication;
-using BuberDinner.Contracts;
+﻿using BuberDinner.Contracts;
 using ErrorOr;
 using Microsoft.AspNetCore.Mvc;
 using BuberDinner.Domain.Common.Errors;
+using BuberDinner.Application.Services.Authentication.Commands;
+using BuberDinner.Application.Services.Authentication.Common;
+using BuberDinner.Application.Services.Authentication.Queries;
 
 namespace BuberDinner.Api.Controllers;
 
 [Route("auth")]
 public class AuthenticationController : ApiController
 {
-    private readonly IAuthenticationService _authenticationService;
+    private readonly IAuthenticationCommandService _authenticationCommandService;
+    private readonly IAuthenticationQueryService _authenticationQueryService;
 
-    public AuthenticationController(IAuthenticationService authenticationService)
+
+    public AuthenticationController(
+        IAuthenticationCommandService authenticationService,
+        IAuthenticationQueryService authenticationQueryService)
     {
-        _authenticationService = authenticationService;
+        _authenticationCommandService = authenticationService;
+        _authenticationQueryService = authenticationQueryService;
     }
 
     [HttpPost("register")]
     public IActionResult Register(RegisterRequest request)
     {
-        ErrorOr<AuthenticationResult> authResult = _authenticationService.Register(
+        ErrorOr<AuthenticationResult> authResult = _authenticationCommandService.Register(
             request.FirstName,
             request.LastName,
             request.Email,
@@ -43,7 +50,7 @@ public class AuthenticationController : ApiController
     [HttpPost("login")]
     public IActionResult Login(LoginRequest request)
     {
-        ErrorOr<AuthenticationResult> authResult = _authenticationService.Login(request.Email, request.Password);
+        ErrorOr<AuthenticationResult> authResult = _authenticationQueryService.Login(request.Email, request.Password);
 
         return authResult.Match(
             authResult => Ok(MapAuthResult(authResult)),
