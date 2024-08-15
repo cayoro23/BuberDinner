@@ -1,33 +1,37 @@
 ﻿using BuberDinner.Application.Common.Interfaces.Authentication;
 using BuberDinner.Application.Common.Interfaces.Persistence;
-using BuberDinner.Application.Services.Authentication.Common;
+using BuberDinner.Application.Authentication.Common;
 using BuberDinner.Domain.Common.Errors;
 using BuberDinner.Domain.Entities;
 using ErrorOr;
+using MediatR;
 
-namespace BuberDinner.Application.Services.Authentication.Queries;
+namespace BuberDinner.Application.Authentication.Commands.Queries.Login;
 
-public class AuthenticationQueryService : IAuthenticationQueryService
+public class LoginQueryHandler: 
+    IRequestHandler<LoginQuery, ErrorOr<AuthenticationResult>>
 {
     private readonly IJwTokenGenerator _jwtGenerator;
     private readonly IUserRepository _userRepository;
 
-    public AuthenticationQueryService(IJwTokenGenerator jwtGenerator, IUserRepository userRepository)
+    public LoginQueryHandler(
+        IUserRepository userRepository,
+        IJwTokenGenerator jwtGenerator)
     {
-        _jwtGenerator = jwtGenerator;
         _userRepository = userRepository;
+        _jwtGenerator = jwtGenerator;
     }
 
-    public ErrorOr<AuthenticationResult> Login(string email, string password)
+    public async Task<ErrorOr<AuthenticationResult>> Handle(LoginQuery query, CancellationToken cancellationToken)
     {
         // 1. Validar si el usuario existe
-        if (_userRepository.GetUserByEmail(email) is not User user)
+        if (_userRepository.GetUserByEmail(query.Email) is not User user)
         {
             return Errors.Authentication.InvalidCredentials;
         }
 
         // 2. Validar si la contraseña es correcta
-        if (user.Password != password)
+        if (user.Password != query.Password)
         {
             return Errors.Authentication.InvalidCredentials;
         }
